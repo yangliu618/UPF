@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0" />
+<title><?php e($this->title);?></title>
+<?php if (is_array($href_styles)) foreach ($href_styles as $style) e('<link type="text/css" href="%s?ver=%s" rel="stylesheet" />'."\r\n", str_replace('//', '/', $style), APP_VER); ?>
+<?php if ($text_styles) e($text_styles); ?>
+</head>
+<body>
+<?php e($the_body); ?>
+<?php if (is_array($href_scripts)) foreach ($href_scripts as $script) e('<script type="text/javascript" src="%s?ver=%s"></script>'."\r\n", str_replace('//', '/', $script), APP_VER); ?>
+<?php if ($text_scripts) e($text_scripts); ?>
+</body>
+</html>
