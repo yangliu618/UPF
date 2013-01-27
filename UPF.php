@@ -113,7 +113,7 @@ function get_config($name=null, $file='common') {
                 '^(FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^Spyc$' => UPF_PATH . '/lib/spyc.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
-                '^(DBQuery|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
+                '^(DBQuery|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),
             // app route rules
             'app_routes' => array(),
@@ -532,7 +532,7 @@ final class App {
                 $pathinfo['filename'] = $pathinfo['basename'];
         }
         if (is_null($route_pairs) || is_array($route_pairs)) {
-            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']) . 'Handler';
+            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']) . (IS_CLI ? '' : 'Handler');
         } else {
             $handler = $route_pairs;
         }
