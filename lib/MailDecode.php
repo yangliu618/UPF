@@ -3,92 +3,37 @@
  * The MailDecode class is used to decode mail/mime messages
  *
  * This class will parse a raw mime email and return the structure.
- * Returned structure is similar to that returned by imap_fetchstructure().
  *
- *  +----------------------------- IMPORTANT ------------------------------+
- *  | Usage of this class compared to native php extensions such as        |
- *  | mailparse or imap, is slow and may be feature deficient. If available|
- *  | you are STRONGLY recommended to use the php extensions.              |
- *  +----------------------------------------------------------------------+
- *
- * @category   Mail
- * @package    Mail_Mime
- * @author     Richard Heyes  <richard@phpguru.org>
- * @author     George Schlossnagle <george@omniti.com>
- * @author     Cipriano Groenendal <cipri@php.net>
- * @author     Sean Coates <sean@php.net>
- * @copyright  2003-2006 PEAR <pear-group@php.net>
- * @license    http://www.opensource.org/licenses/bsd-license.php BSD License
- * @version    Release: @package_version@
  * @link       http://pear.php.net/package/Mail_mime
  */
 class MailDecode
 {
-    /**
-     * The raw email to decode
-     *
-     * @var    string
-     * @access private
-     */
-    var $_input;
+    // The raw email to decode
+    public $input;
 
-    /**
-     * The header part of the input
-     *
-     * @var    string
-     * @access private
-     */
-    var $_header;
+    // The header part of the input
+    public $header;
 
-    /**
-     * The body part of the input
-     *
-     * @var    string
-     * @access private
-     */
-    var $_body;
+    // The body part of the input
+    public $body;
 
-    /**
-     * If an error occurs, this is used to store the message
-     *
-     * @var    string
-     * @access private
-     */
-    var $_error;
+    // If an error occurs, this is used to store the message
+    public $error;
 
-    /**
-     * Flag to determine whether to include bodies in the
-     * returned object.
-     *
-     * @var    boolean
-     * @access private
-     */
-    var $_include_bodies;
+    // Flag to determine whether to include bodies in the returned object.
+    public $include_bodies;
 
-    /**
-     * Flag to determine whether to decode bodies
-     *
-     * @var    boolean
-     * @access private
-     */
-    var $_decode_bodies;
+    // Flag to determine whether to decode bodies
+    public $decode_bodies;
 
-    /**
-     * Flag to determine whether to decode headers
-     *
-     * @var    boolean
-     * @access private
-     */
-    var $_decode_headers;
+    // Flag to determine whether to decode headers
+    public $decode_headers;
 
     /**
      * Flag to determine whether to include attached messages
      * as body in the returned object. Depends on $_include_bodies
-     *
-     * @var    boolean
-     * @access private
      */
-    var $_rfc822_bodies;
+    public $rfc822_bodies;
 
     /**
      * Constructor.
@@ -96,63 +41,24 @@ class MailDecode
      * Sets up the object, initialise the variables, and splits and
      * stores the header and body of the input.
      *
-     * @param string The input to decode
-     * @access public
+     * @param string $input The input to decode
      */
-    function MailDecode($input)
+    public function __construct($input)
     {
-        list($header, $body)   = $this->_splitBodyHeader($input);
+        list($header, $body)   = $this->splitBodyHeader($input);
 
-        $this->_input          = $input;
-        $this->_header         = $header;
-        $this->_body           = $body;
-        $this->_decode_bodies  = false;
-        $this->_include_bodies = true;
-        $this->_rfc822_bodies  = false;
+        $this->input          = $input;
+        $this->header         = $header;
+        $this->body           = $body;
+        $this->decode_bodies  = false;
+        $this->include_bodies = true;
+        $this->rfc822_bodies  = false;
     }
 
     /**
-     * decode rfc2047 strings
+     *  静态调用解析邮件
      *
-     * =?UTF-8?Q?.........?=
-     * =?Big5?B?.......=?=
-     *
-     * @param string $string
-     * @param string $toEncoding convert to encoding..
-     * @return string decoded string.
-     */
-    static function rfc2047_decode($string, $toEncoding = 'utf-8') {
-        if (preg_match_all('/(.+?)?=\?([^?]+)\?([bq])\?(.*?)\?=(.+?)?/i', $string, $regs)) {
-            $decoded = $regs[1][0];
-            $size = count($regs[2]);
-            for ($i = 0; $i < $size; $i++) {
-                $encoding = $regs[2][$i];
-                $type = strtolower($regs[3][$i]);
-                $text = $regs[4][$i];
-
-                if ($type == 'q') {
-                    $text = str_replace('_', ' ', $text);
-                    preg_match_all('/=([a-f0-9]{2})/i', $text, $matches);
-                    foreach ($matches[1] as $value)
-                        $text = str_replace('=' . $value, chr(hexdec($value)), $text);
-                    $decoded .= $text;
-                } elseif ($type == 'b') {
-                    $decode = base64_decode($text);
-                    $text = mb_convert_encoding($decode, $toEncoding, $encoding);
-                    $decoded .= $text;
-                }
-            }
-            $decoded .= $regs[5][0];
-            return $decoded;
-        }
-        return $string;
-    }
-
-    /**
-     * Begins the decoding process. If called statically
-     * it will create an object and call the decode() method
-     * of it.
-     *
+     * @param string $input
      * @param array An array of various parameters that determine
      *              various things:
      *              include_bodies - Whether to include the body in the returned
@@ -162,40 +68,21 @@ class MailDecode
      *              decode_headers - Whether to decode headers
      *              input          - If called statically, this will be treated
      *                               as the input
-     * @return object Decoded results
-     * @access public
+     * @return object Decoded results|UPF_Exception
      */
-    function decode($params = null)
+    static function decode($input, $params = null)
     {
-        // determine if this method has been called statically
-        $isStatic = empty($this) || !is_a($this, __CLASS__);
 
-        // Have we been called statically?
-	// If so, create an object and pass details to that.
-        if ($isStatic AND isset($params['input'])) {
+        $obj = new MailDecode($input);
 
-            $obj = new MailDecode($params['input']);
-            $structure = $obj->decode($params);
+        $obj->include_bodies = isset($params['include_bodies']) ? $params['include_bodies'] : false;
+        $obj->decode_bodies = isset($params['decode_bodies']) ? $params['decode_bodies'] : false;
+        $obj->decode_headers = isset($params['decode_headers']) ? $params['decode_headers'] : false;
+        $obj->rfc822_bodies = isset($params['rfc_822bodies']) ? $params['rfc_822bodies'] : false;
 
-        // Called statically but no input
-        } elseif ($isStatic) {
-            return upf_error('Called statically and no input given');
-
-        // Called via an object
-        } else {
-            $this->_include_bodies = isset($params['include_bodies']) ?
-	                             $params['include_bodies'] : false;
-            $this->_decode_bodies  = isset($params['decode_bodies']) ?
-	                             $params['decode_bodies']  : false;
-            $this->_decode_headers = isset($params['decode_headers']) ?
-	                             $params['decode_headers'] : false;
-            $this->_rfc822_bodies  = isset($params['rfc_822bodies']) ?
-	                             $params['rfc_822bodies']  : false;
-
-            $structure = $this->_decode($this->_header, $this->_body);
-            if ($structure === false) {
-                $structure = new UPF_Exception($this->_error);
-            }
+        $structure = $obj->mail_decode($obj->header, $obj->body);
+        if ($structure === false) {
+            $structure = new UPF_Exception($obj->error);
         }
 
         return $structure;
@@ -206,19 +93,19 @@ class MailDecode
      * If it finds certain content-types it will call itself in a
      * recursive fashion
      *
-     * @param string Header section
-     * @param string Body section
+     * @param string $headers Header section
+     * @param string $body Body section
+     * @param string $default_ctype
      * @return object Results of decoding process
-     * @access private
      */
-    function _decode($headers, $body, $default_ctype = 'text/plain')
+    private function mail_decode($headers, $body, $default_ctype = 'text/plain')
     {
         $return = new stdClass;
         $return->headers = array();
-        $headers = $this->_parseHeaders($headers);
+        $headers = $this->parseHeaders($headers);
 
         foreach ($headers as $value) {
-            $value['value'] = $this->_decode_headers ? $this->_decodeHeader($value['value']) : $value['value'];
+            $value['value'] = $this->decode_headers ? $this->decodeHeader($value['value']) : $value['value'];
             if (isset($return->headers[strtolower($value['name'])]) AND !is_array($return->headers[strtolower($value['name'])])) {
                 $return->headers[strtolower($value['name'])]   = array($return->headers[strtolower($value['name'])]);
                 $return->headers[strtolower($value['name'])][] = $value['value'];
@@ -237,7 +124,7 @@ class MailDecode
             switch ($headers[$key]['name']) {
 
                 case 'content-type':
-                    $content_type = $this->_parseHeaderValue($headers[$key]['value']);
+                    $content_type = $this->parseHeaderValue($headers[$key]['value']);
 
                     if (preg_match('/([0-9a-z+.-]+)\/([0-9a-z+.-]+)/i', $content_type['value'], $regs)) {
                         $return->ctype_primary   = $regs[1];
@@ -252,7 +139,7 @@ class MailDecode
                     break;
 
                 case 'content-disposition':
-                    $content_disposition = $this->_parseHeaderValue($headers[$key]['value']);
+                    $content_disposition = $this->parseHeaderValue($headers[$key]['value']);
                     $return->disposition   = $content_disposition['value'];
                     if (isset($content_disposition['other'])) {
                         foreach($content_disposition['other'] as $p_name => $p_value) {
@@ -262,7 +149,7 @@ class MailDecode
                     break;
 
                 case 'content-transfer-encoding':
-                    $content_transfer_encoding = $this->_parseHeaderValue($headers[$key]['value']);
+                    $content_transfer_encoding = $this->parseHeaderValue($headers[$key]['value']);
                     break;
             }
         }
@@ -271,12 +158,12 @@ class MailDecode
             switch (strtolower($content_type['value'])) {
                 case 'text/plain':
                     $encoding = isset($content_transfer_encoding) ? $content_transfer_encoding['value'] : '7bit';
-                    $this->_include_bodies ? $return->body = ($this->_decode_bodies ? $this->_decodeBody($body, $encoding) : $body) : null;
+                    $this->include_bodies ? $return->body = ($this->decode_bodies ? $this->decodeBody($body, $encoding) : $body) : null;
                     break;
 
                 case 'text/html':
                     $encoding = isset($content_transfer_encoding) ? $content_transfer_encoding['value'] : '7bit';
-                    $this->_include_bodies ? $return->body = ($this->_decode_bodies ? $this->_decodeBody($body, $encoding) : $body) : null;
+                    $this->include_bodies ? $return->body = ($this->decode_bodies ? $this->decodeBody($body, $encoding) : $body) : null;
                     break;
 
                 case 'multipart/parallel':
@@ -289,38 +176,38 @@ class MailDecode
                 case 'multipart/mixed':
                 case 'application/vnd.wap.multipart.related':
                     if(!isset($content_type['other']['boundary'])){
-                        $this->_error = 'No boundary found for ' . $content_type['value'] . ' part';
+                        $this->error = 'No boundary found for ' . $content_type['value'] . ' part';
                         return false;
                     }
 
                     $default_ctype = (strtolower($content_type['value']) === 'multipart/digest') ? 'message/rfc822' : 'text/plain';
 
-                    $parts = $this->_boundarySplit($body, $content_type['other']['boundary']);
+                    $parts = $this->boundarySplit($body, $content_type['other']['boundary']);
                     for ($i = 0; $i < count($parts); $i++) {
-                        list($part_header, $part_body) = $this->_splitBodyHeader($parts[$i]);
-                        $part = $this->_decode($part_header, $part_body, $default_ctype);
+                        list($part_header, $part_body) = $this->splitBodyHeader($parts[$i]);
+                        $part = $this->mail_decode($part_header, $part_body, $default_ctype);
                         if($part === false)
-                            $part = new UPF_Exception($this->_error);
+                            $part = new UPF_Exception($this->error);
                         $return->parts[] = $part;
                     }
                     break;
 
                 case 'message/rfc822':
-					if ($this->_rfc822_bodies) {
+					if ($this->rfc822_bodies) {
 						$encoding = isset($content_transfer_encoding) ? $content_transfer_encoding['value'] : '7bit';
-						$return->body = ($this->_decode_bodies ? $this->_decodeBody($body, $encoding) : $body);
+						$return->body = ($this->decode_bodies ? $this->decodeBody($body, $encoding) : $body);
 					}
                     $obj = new MailDecode($body);
-                    $return->parts[] = $obj->decode(array('include_bodies' => $this->_include_bodies,
-					                                      'decode_bodies'  => $this->_decode_bodies,
-														  'decode_headers' => $this->_decode_headers));
+                    $return->parts[] = $obj->decode(array('include_bodies' => $this->include_bodies,
+					                                      'decode_bodies'  => $this->decode_bodies,
+														  'decode_headers' => $this->decode_headers));
                     unset($obj);
                     break;
 
                 default:
                     if(!isset($content_transfer_encoding['value']))
                         $content_transfer_encoding['value'] = '7bit';
-                    $this->_include_bodies ? $return->body = ($this->_decode_bodies ? $this->_decodeBody($body, $content_transfer_encoding['value']) : $body) : null;
+                    $this->include_bodies ? $return->body = ($this->decode_bodies ? $this->decodeBody($body, $content_transfer_encoding['value']) : $body) : null;
                     break;
             }
 
@@ -328,51 +215,9 @@ class MailDecode
             $ctype = explode('/', $default_ctype);
             $return->ctype_primary   = $ctype[0];
             $return->ctype_secondary = $ctype[1];
-            $this->_include_bodies ? $return->body = ($this->_decode_bodies ? $this->_decodeBody($body) : $body) : null;
+            $this->include_bodies ? $return->body = ($this->decode_bodies ? $this->decodeBody($body) : $body) : null;
         }
 
-        return $return;
-    }
-
-    /**
-     * Given the output of the above function, this will return an
-     * array of references to the parts, indexed by mime number.
-     *
-     * @param  object $structure   The structure to go through
-     * @param  string $mime_number Internal use only.
-     * @return array               Mime numbers
-     */
-    function &getMimeNumbers(&$structure, $no_refs = false, $mime_number = '', $prepend = '')
-    {
-        $return = array();
-        if (!empty($structure->parts)) {
-            if ($mime_number != '') {
-                $structure->mime_id = $prepend . $mime_number;
-                $return[$prepend . $mime_number] = &$structure;
-            }
-            for ($i = 0; $i < count($structure->parts); $i++) {
-
-            
-                if (!empty($structure->headers['content-type']) AND substr(strtolower($structure->headers['content-type']), 0, 8) == 'message/') {
-                    $prepend      = $prepend . $mime_number . '.';
-                    $_mime_number = '';
-                } else {
-                    $_mime_number = ($mime_number == '' ? $i + 1 : sprintf('%s.%s', $mime_number, $i + 1));
-                }
-
-                $arr = &MailDecode::getMimeNumbers($structure->parts[$i], $no_refs, $_mime_number, $prepend);
-                foreach ($arr as $key => $val) {
-                    $no_refs ? $return[$key] = '' : $return[$key] = &$arr[$key];
-                }
-            }
-        } else {
-            if ($mime_number == '') {
-                $mime_number = '1';
-            }
-            $structure->mime_id = $prepend . $mime_number;
-            $no_refs ? $return[$prepend . $mime_number] = '' : $return[$prepend . $mime_number] = &$structure;
-        }
-        
         return $return;
     }
 
@@ -381,11 +226,11 @@ class MailDecode
      * section, this function will split them (at the first
      * blank line) and return them.
      *
-     * @param string Input to split apart
+     * @param string $input Input to split apart
      * @return array Contains header and body section
      * @access private
      */
-    function _splitBodyHeader($input)
+    private function splitBodyHeader($input)
     {
         if (preg_match("/^(.*?)\r?\n\r?\n(.*)/s", $input, $match)) {
             return array($match[1], $match[2]);
@@ -395,7 +240,7 @@ class MailDecode
         if (count(explode("\n",$input))) {
             return array($input, '');
         }
-        $this->_error = 'Could not split header and body';
+        $this->error = 'Could not split header and body';
         return false;
     }
 
@@ -403,11 +248,11 @@ class MailDecode
      * Parse headers given in $input and return
      * as assoc array.
      *
-     * @param string Headers to parse
+     * @param string $input Headers to parse
      * @return array Contains parsed headers
      * @access private
      */
-    function _parseHeaders($input)
+    private function parseHeaders($input)
     {
 
         if ($input !== '') {
@@ -446,15 +291,15 @@ class MailDecode
      * robust as it could be. Eg. header comments
      * in the wrong place will probably break it.
      *
-     * @param string Header value to parse
+     * @param string $input Header value to parse
      * @return array Contains parsed result
      * @access private
      */
-    function _parseHeaderValue($input)
+    private function parseHeaderValue($input)
     {
 
         if (($pos = strpos($input, ';')) === false) {
-            $input = $this->_decode_headers ? $this->_decodeHeader($input) : $input;
+            $input = $this->decode_headers ? $this->decodeHeader($input) : $input;
             $return['value'] = trim($input);
             return $return;
         }
@@ -462,7 +307,7 @@ class MailDecode
 
 
         $value = substr($input, 0, $pos);
-        $value = $this->_decode_headers ? $this->_decodeHeader($value) : $value;
+        $value = $this->decode_headers ? $this->decodeHeader($value) : $value;
         $return['value'] = trim($value);
         $input = trim(substr($input, $pos+1));
 
@@ -605,7 +450,7 @@ class MailDecode
         }
         // decode values.
         foreach($return['other'] as $key =>$val) {
-            $return['other'][$key] = $this->_decode_headers ? $this->_decodeHeader($val) : $val;
+            $return['other'][$key] = $this->decode_headers ? $this->decodeHeader($val) : $val;
         }
        //print_r($return);
         return $return;
@@ -615,11 +460,11 @@ class MailDecode
      * This function splits the input based
      * on the given boundary
      *
-     * @param string Input to parse
+     * @param string $input Input to parse
      * @return array Contains array of resulting mime parts
      * @access private
      */
-    function _boundarySplit($input, $boundary)
+    private function boundarySplit($input, $boundary)
     {
         $parts = array();
 
@@ -651,11 +496,11 @@ class MailDecode
      * conformant, but it does pass all the given
      * examples (in RFC2047).
      *
-     * @param string Input header value to decode
+     * @param string $input Input header value to decode
+     * @param string $toEncoding
      * @return string Decoded header value
-     * @access private
      */
-    function _decodeHeader($input)
+    private function decodeHeader($input, $toEncoding = 'utf-8')
     {
         // Remove white space between encoded-words
         $input = preg_replace('/(=\?[^?]+\?(q|b)\?[^?]*\?=)(\s)+=\?/i', '\1=?', $input);
@@ -671,6 +516,8 @@ class MailDecode
             switch (strtolower($encoding)) {
                 case 'b':
                     $text = base64_decode($text);
+                    if (function_exists('mb_convert_encoding'))
+                        $text = mb_convert_encoding($text, $toEncoding, $charset);
                     break;
 
                 case 'q':
@@ -691,12 +538,11 @@ class MailDecode
      * Given a body string and an encoding type,
      * this function will decode and return it.
      *
-     * @param  string Input body to decode
-     * @param  string Encoding type to use.
+     * @param  string $input Input body to decode
+     * @param  string $encoding Encoding type to use.
      * @return string Decoded body
-     * @access private
      */
-    function _decodeBody($input, $encoding = '7bit')
+    private function decodeBody($input, $encoding = '7bit')
     {
         switch (strtolower($encoding)) {
             case '7bit':
@@ -704,7 +550,7 @@ class MailDecode
                 break;
 
             case 'quoted-printable':
-                return $this->_quotedPrintableDecode($input);
+                return $this->quotedPrintableDecode($input);
                 break;
 
             case 'base64':
@@ -720,11 +566,10 @@ class MailDecode
      * Given a quoted-printable string, this
      * function will decode and return it.
      *
-     * @param  string Input body to decode
+     * @param  string $input Input body to decode
      * @return string Decoded body
-     * @access private
      */
-    function _quotedPrintableDecode($input)
+    private function quotedPrintableDecode($input)
     {
         // Remove soft line breaks
         $input = preg_replace("/=\r?\n/", '', $input);
@@ -745,12 +590,10 @@ class MailDecode
      * however and won't just blindly decode whatever you
      * pass it.
      *
-     * @param  string Input body to look for attahcments in
+     * @param  string $input Input body to look for attahcments in
      * @return array  Decoded bodies, filenames and permissions
-     * @access public
-     * @author Unknown
      */
-    function &uudecode($input)
+    public static function &uudecode($input)
     {
         // Find all uuencoded sections
         preg_match_all("/begin ([0-7]{3}) (.+)\r?\n(.+)\r?\nend/Us", $input, $matches);
@@ -809,166 +652,4 @@ class MailDecode
 
         return $files;
     }
-
-    /**
-     * getSendArray() returns the arguments required for Mail::send()
-     * used to build the arguments for a mail::send() call 
-     *
-     * Usage:
-     * $mailtext = Full email (for example generated by a template)
-     * $decoder = new MailDecode($mailtext);
-     * $parts =  $decoder->getSendArray();
-     * if (!PEAR::isError($parts) {
-     *     list($recipents,$headers,$body) = $parts;
-     *     $mail = Mail::factory('smtp');
-     *     $mail->send($recipents,$headers,$body);
-     * } else {
-     *     echo $parts->message;
-     * }
-     * @return mixed   array of recipeint, headers,body or Pear_Error
-     * @access public
-     * @author Alan Knowles <alan@akbkhome.com>
-     */
-    function getSendArray()
-    {
-        // prevent warning if this is not set
-        $this->_decode_headers = FALSE;
-        $headerlist =$this->_parseHeaders($this->_header);
-        $to = "";
-        if (!$headerlist) {
-            return upf_error("Message did not contain headers");
-        }
-        foreach($headerlist as $item) {
-            $header[$item['name']] = $item['value'];
-            switch (strtolower($item['name'])) {
-                case "to":
-                case "cc":
-                case "bcc":
-                    $to .= ",".$item['value'];
-                default:
-                   break;
-            }
-        }
-        if ($to == "") {
-            return upf_error("Message did not contain any recipents");
-        }
-        $to = substr($to,1);
-        return array($to,$header,$this->_body);
-    } 
-
-    /**
-     * Returns a xml copy of the output of
-     * MailDecode::decode. Pass the output in as the
-     * argument. This function can be called statically. Eg:
-     *
-     * $output = $obj->decode();
-     * $xml    = MailDecode::getXML($output);
-     *
-     * The DTD used for this should have been in the package. Or
-     * alternatively you can get it from cvs, or here:
-     * http://www.phpguru.org/xmail/xmail.dtd.
-     *
-     * @param  object Input to convert to xml. This should be the
-     *                output of the MailDecode::decode function
-     * @return string XML version of input
-     * @access public
-     */
-    function getXML($input)
-    {
-        $crlf    =  "\r\n";
-        $output  = '<?xml version=\'1.0\'?>' . $crlf .
-                   '<!DOCTYPE email SYSTEM "http://www.phpguru.org/xmail/xmail.dtd">' . $crlf .
-                   '<email>' . $crlf .
-                   MailDecode::_getXML($input) .
-                   '</email>';
-
-        return $output;
-    }
-
-    /**
-     * Function that does the actual conversion to xml. Does a single
-     * mimepart at a time.
-     *
-     * @param  object  Input to convert to xml. This is a mimepart object.
-     *                 It may or may not contain subparts.
-     * @param  integer Number of tabs to indent
-     * @return string  XML version of input
-     * @access private
-     */
-    function _getXML($input, $indent = 1)
-    {
-        $htab    =  "\t";
-        $crlf    =  "\r\n";
-        $output  =  '';
-        $headers = @(array)$input->headers;
-
-        foreach ($headers as $hdr_name => $hdr_value) {
-
-            // Multiple headers with this name
-            if (is_array($headers[$hdr_name])) {
-                for ($i = 0; $i < count($hdr_value); $i++) {
-                    $output .= MailDecode::_getXML_helper($hdr_name, $hdr_value[$i], $indent);
-                }
-
-            // Only one header of this sort
-            } else {
-                $output .= MailDecode::_getXML_helper($hdr_name, $hdr_value, $indent);
-            }
-        }
-
-        if (!empty($input->parts)) {
-            for ($i = 0; $i < count($input->parts); $i++) {
-                $output .= $crlf . str_repeat($htab, $indent) . '<mimepart>' . $crlf .
-                           MailDecode::_getXML($input->parts[$i], $indent+1) .
-                           str_repeat($htab, $indent) . '</mimepart>' . $crlf;
-            }
-        } elseif (isset($input->body)) {
-            $output .= $crlf . str_repeat($htab, $indent) . '<body><![CDATA[' .
-                       $input->body . ']]></body>' . $crlf;
-        }
-
-        return $output;
-    }
-
-    /**
-     * Helper function to _getXML(). Returns xml of a header.
-     *
-     * @param  string  Name of header
-     * @param  string  Value of header
-     * @param  integer Number of tabs to indent
-     * @return string  XML version of input
-     * @access private
-     */
-    function _getXML_helper($hdr_name, $hdr_value, $indent)
-    {
-        $htab   = "\t";
-        $crlf   = "\r\n";
-        $return = '';
-
-        $new_hdr_value = ($hdr_name != 'received') ? MailDecode::_parseHeaderValue($hdr_value) : array('value' => $hdr_value);
-        $new_hdr_name  = str_replace(' ', '-', ucwords(str_replace('-', ' ', $hdr_name)));
-
-        // Sort out any parameters
-        if (!empty($new_hdr_value['other'])) {
-            foreach ($new_hdr_value['other'] as $paramname => $paramvalue) {
-                $params[] = str_repeat($htab, $indent) . $htab . '<parameter>' . $crlf .
-                            str_repeat($htab, $indent) . $htab . $htab . '<paramname>' . htmlspecialchars($paramname) . '</paramname>' . $crlf .
-                            str_repeat($htab, $indent) . $htab . $htab . '<paramvalue>' . htmlspecialchars($paramvalue) . '</paramvalue>' . $crlf .
-                            str_repeat($htab, $indent) . $htab . '</parameter>' . $crlf;
-            }
-
-            $params = implode('', $params);
-        } else {
-            $params = '';
-        }
-
-        $return = str_repeat($htab, $indent) . '<header>' . $crlf .
-                  str_repeat($htab, $indent) . $htab . '<headername>' . htmlspecialchars($new_hdr_name) . '</headername>' . $crlf .
-                  str_repeat($htab, $indent) . $htab . '<headervalue>' . htmlspecialchars($new_hdr_value['value']) . '</headervalue>' . $crlf .
-                  $params .
-                  str_repeat($htab, $indent) . '</header>' . $crlf;
-
-        return $return;
-    }
-
 } // End of class
