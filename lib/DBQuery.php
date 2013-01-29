@@ -13,7 +13,7 @@ abstract class DBQuery {
     public $name       = 'test';
     public $prefix     = '';
     public $scheme     = null;
-    public $query_count = 0;
+    static $query_count = 0;
 
     /**
      * 类构造
@@ -246,9 +246,18 @@ abstract class DBQuery {
         if ( is_null( $query ) ) return '';
         $args = func_get_args(); array_shift( $args );
         // 预处理SQL
-        if (preg_match_all("/'[^']+'|\"[^\"]+\"/", $query, $r)) {
+        if (preg_match_all("/'.+?'\\s*,|\".+?\"\\s*,|'.+?'\\s*|\".+?\"\\s*/", $query, $r)) {
             foreach ($r[0] as $i => $v) {
-                $query = preg_replace('/' . preg_quote($v, '/') . '/', "'@{$i}@'", $query, 1);
+                // 值太大，取指纹码
+                $len = strlen($v);
+                if ($len > 10240) {
+                    $vs = preg_quote(substr($v, 0, 10), '/');
+                    $vs.= '(.+?)'.preg_quote(substr($v, mt_rand(20, $len-20), mt_rand(50,250)), '/').'(.+?)';
+                    $vs.= preg_quote(substr($v, -10), '/');
+                } else {
+                    $vs = preg_quote($v, '/');
+                }
+                $query = preg_replace('/' . $vs . '/s', "'@{$i}@'", $query, 1);
             }
         }
         // 替换前缀

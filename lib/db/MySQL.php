@@ -110,7 +110,10 @@ class DB_MySQL extends DBQuery {
 
         $_begin_time = microtime(true);
 
-        $this->last_sql = $sql;
+        $this->last_sql = $sql; print_r($sql);
+        // 统计SQL执行次数
+        DBQuery::$query_count++;
+        // 执行SQL
         if (!($result = $func($sql,$this->conn))) {
             if (in_array(mysql_errno($this->conn),array(2006,2013)) && ($this->goneaway-- > 0)) {
                 $this->close(); $this->connect(); $this->select_db();
@@ -123,7 +126,6 @@ class DB_MySQL extends DBQuery {
         }
         // 记录sql执行日志
         Logger::instance()->log(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
-
         // 查询正常
         if ($result) {
             // 重置计数
@@ -137,8 +139,6 @@ class DB_MySQL extends DBQuery {
                 }
             }
         }
-        // 统计SQL执行次数
-        $this->query_count++;
         return $result;
     }
     /**

@@ -714,7 +714,6 @@ final class App {
      * @return void
      */
     public function __destruct() {
-        global $db; if (!$db) { $db = new NOOPClass(); $db->query_count = 0; }
         while ($this->shutdowns && is_array($this->shutdowns)) {
             $functions = array_reverse($this->shutdowns); $this->shutdowns = array();
             foreach ($functions as $function) {
@@ -725,7 +724,7 @@ final class App {
         if (IS_CLI) {
             printf("\n\n---------- %s ----------\n", date('Y-m-d H:i:s', time()));
             printf("Powered-By: UPF/%s (UTeng.net)\n", UPF_VER);
-            printf("Run-App: root=%s; version=%s; sql_exec=%s\n", APP_ROOT, APP_VER, $db->query_count);
+            printf("Run-App: root=%s; version=%s; sql_exec=%s\n", APP_ROOT, APP_VER, DBQuery::$query_count);
             printf("Runtime: %s\n\n", microtime(true) - $this->begin_time);
         }
         // http mode
@@ -733,7 +732,7 @@ final class App {
             // must start ob_start();
             header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
             header('X-Powered-By: UPF/' . UPF_VER . ' (UTeng.net)');
-            header('X-Run-App: root=' . APP_ROOT . '; version=' . APP_VER.'; sql_exec='.($db->query_count));
+            header('X-Run-App: root=' . APP_ROOT . '; version=' . APP_VER.'; sql_exec='.(DBQuery::$query_count));
             header('X-Runtime: ' . (microtime(true) - $this->begin_time));
             // flush content to browser
             ob_end_flush(); flush();

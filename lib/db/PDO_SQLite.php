@@ -84,6 +84,9 @@ class DB_PDO_SQLite extends DBQuery {
         $_begin_time = microtime(true);
 
         $this->last_sql = $sql;
+        // 统计SQL执行次数
+        DBQuery::$query_count++;
+        // 执行SQL
         $result = $this->conn->$func($sql);
         if ($this->errno() != 0) {
             upf_error(sprintf(__('SQLite 查询错误：%s'),$sql."\r\n\t".$this->error()));
@@ -101,8 +104,6 @@ class DB_PDO_SQLite extends DBQuery {
         }
         // 记录sql执行日志
         Logger::instance()->log(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
-        // 统计SQL执行次数
-        $this->query_count++;
         return $result;
     }
     /**
