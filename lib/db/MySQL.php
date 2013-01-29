@@ -110,7 +110,7 @@ class DB_MySQL extends DBQuery {
 
         $_begin_time = microtime(true);
 
-        $this->last_sql = $sql; print_r($sql);
+        $this->last_sql = $sql;
         // 统计SQL执行次数
         DBQuery::$query_count++;
         // 执行SQL
