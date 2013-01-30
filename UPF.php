@@ -107,6 +107,8 @@ function get_config($name=null, $file='common') {
             'crossdomain' => IS_CLI ? '*' : '*.' . $_SERVER['HTTP_HOST'],
             // 输出日志允许的IP
             'logger_allowIPs' => '127.0.0.1',
+            // 默认使用rewrite
+            'app_rewrite' => true,
             // app common autoload
             'app_autoload' => array(
                 '^DB_(.+?)$' => UPF_PATH . '/lib/db/$1.php',
@@ -386,7 +388,9 @@ final class App {
     // app uri
     private $uri;
     // use rewrite
-    private $rewrite, $qfield;
+    private $rewrite;
+    // qfield
+    private $qfield;
 
     public function __construct() {
         // set app begin time
