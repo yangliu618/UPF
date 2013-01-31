@@ -43,7 +43,7 @@ defined('APP_ROOT') or define('APP_ROOT', (($r = substr(str_replace('\\','/',dir
 define('HTTP_SCHEME', (($scheme = isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : null) == 'off' || empty($scheme)) ? 'http' : 'https');
 // tmp path
 if (IS_WIN) {
-    defined('TMP_PATH') or define('TMP_PATH', APP_PATH . '/tmp');
+    defined('TMP_PATH') or define('TMP_PATH', APP_PATH . '/tmp'); mkdirs(TMP_PATH);
 } else {
     defined('TMP_PATH') or define('TMP_PATH', IS_SAE ? SAE_TMP_PATH : '/tmp');
 }
@@ -1324,7 +1324,7 @@ function hide_path($path){
  * @param int    $mode   权限
  * @return bool
  */
-function mkdirs($path, $mode = 0700){
+function mkdirs($path, $mode = 0600){
     // sina sae 不能创建目录
     if (IS_SAE || strlen($path)==0) return false;
     if (!is_dir($path)) {
