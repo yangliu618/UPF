@@ -20,7 +20,7 @@ defined('UPF_QFIELD') or define('UPF_QFIELD', 'q');
 define('IS_CGI', !strncasecmp(PHP_SAPI, 'cgi', 3) ? 1 : 0);
 define('IS_WIN', DIRECTORY_SEPARATOR == '\\');
 define('IS_CLI', PHP_SAPI == 'cli' ? 1 : 0);
-define('IS_SAE', extension_loaded('sae_hooked_funcs'));
+define('IS_SAE', extension_loaded('saeext'));
 // current file path
 if (!defined('PHP_FILE')) {
     if (IS_CLI) {
@@ -45,7 +45,7 @@ define('HTTP_SCHEME', (($scheme = isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] :
 if (IS_WIN) {
     defined('TMP_PATH') or define('TMP_PATH', APP_PATH . '/tmp'); mkdirs(TMP_PATH);
 } else {
-    defined('TMP_PATH') or define('TMP_PATH', IS_SAE ? SAE_TMP_PATH : '/tmp');
+    defined('TMP_PATH') or define('TMP_PATH', IS_SAE ? rtrim(SAE_TMP_PATH, '/') : '/tmp');
 }
 // set timezone
 if (defined('TIME_ZONE')) {
@@ -115,7 +115,7 @@ function get_config($name=null, $file='common') {
                 '^(FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^Spyc$' => UPF_PATH . '/lib/spyc.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
-                '^(DBQuery|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
+                '^(DBQuery|HTMLFixer|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),
             // app route rules
             'app_routes' => array(),
@@ -536,7 +536,7 @@ final class App {
                 $pathinfo['filename'] = $pathinfo['basename'];
         }
         if (is_null($route_pairs) || is_array($route_pairs)) {
-            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']) . (IS_CLI ? '' : 'Handler');
+            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']) . 'Handler';
         } else {
             $handler = $route_pairs;
         }
@@ -600,7 +600,7 @@ final class App {
                 // 初始化类
                 $handle = new $handler();
                 // 执行方式
-                $method = apply_filters('apprun_method', IS_CLI ? 'run' : strtolower($_SERVER['REQUEST_METHOD']));
+                $method = apply_filters('apprun_method', IS_CLI ? 'get' : strtolower($_SERVER['REQUEST_METHOD']));
                 // arguments
                 $arguments = $this->route_matches ? $this->route_matches : array();
                 // 类可以访问
