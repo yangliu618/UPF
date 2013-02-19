@@ -209,7 +209,7 @@ class Httplib {
             } else {
                 curl_setopt( $handle, CURLOPT_PROXY, $this->proxy_host .':'. $this->proxy_port );
             }
-            Logger::instance()->log(sprintf("Use Proxy: [%s:%s]", $this->proxy_host, $this->proxy_port));
+            Logger::instance()->debug(sprintf("Use Proxy: [%s:%s]", $this->proxy_host, $this->proxy_port));
         }
                                                                                                                                 
 
@@ -268,7 +268,7 @@ class Httplib {
         // 提交
         $str_response = curl_exec( $handle );
                                                                                                                                 
-        Logger::instance()->log(sprintf("%01.6f %s Request: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, curl_getinfo($handle, CURLINFO_HEADER_OUT)));
+        Logger::instance()->debug(sprintf("%01.6f %s Request: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, curl_getinfo($handle, CURLINFO_HEADER_OUT)));
                                                                                                                                 
         // We don't need to return the body, so don't. Just execute request and return.
         if ( ! $r['blocking'] ) {
@@ -292,7 +292,7 @@ class Httplib {
                 $headers = $header_parts[ count($header_parts) -1 ];
             }
             // 记录日志
-            Logger::instance()->log(sprintf("%01.6f %s Response: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $headers));
+            Logger::instance()->debug(sprintf("%01.6f %s Response: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $headers));
                                                                                                                                                                                                 
             $headers = $this->parse_header($headers);
         } else {
@@ -376,7 +376,7 @@ class Httplib {
         // 代理
         if ($this->proxy_host && $this->proxy_port) {
             $handle = fsockopen($this->proxy_host, $this->proxy_port, $errno, $errstr, $r['timeout']);
-            Logger::instance()->log(sprintf("Use Proxy: [%s:%s]", $this->proxy_host, $this->proxy_port));
+            Logger::instance()->debug(sprintf("Use Proxy: [%s:%s]", $this->proxy_host, $this->proxy_port));
         } else {
             $handle = fsockopen($host, $aurl['port'], $errno, $errstr, $r['timeout']);
         }
@@ -433,7 +433,7 @@ class Httplib {
         fwrite($handle, $str_headers);
                                                                                                                                 
         // 记录日志
-        Logger::instance()->log(sprintf("%01.6f %s Request: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $str_headers));
+        Logger::instance()->debug(sprintf("%01.6f %s Request: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $str_headers));
                                                                                                                                 
         // 非阻塞模式
         if (!$r['blocking']) {
@@ -457,7 +457,7 @@ class Httplib {
         $process  = array('headers' => isset($response[0]) ? $response[0] : array(), 'body' => isset($response[1]) ? $response[1] : '');
                                                                                                                                 
         // 记录日志
-        Logger::instance()->log(sprintf("%01.6f %s Response: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $process['headers']));
+        Logger::instance()->debug(sprintf("%01.6f %s Response: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, $process['headers']));
         // 处理headers
         $headers = $this->parse_header($process['headers']);
 

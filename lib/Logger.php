@@ -6,13 +6,6 @@
  * @version $Id$
  * @datetime 2011-09-18 01:20
  */
-define('LOGGER_OFF',    0); // Nothing at all.
-define('LOGGER_DEBUG',  1); // Most Verbose
-define('LOGGER_INFO',   2); // ...
-define('LOGGER_WARN',   3); // ...
-define('LOGGER_ERROR',  4); // ...
-define('LOGGER_FATAL',  5); // ...
-define('LOGGER_LOG',    6); // Least Verbose
 
 class Logger {
 
@@ -48,21 +41,24 @@ class Logger {
 
     public function __construct($priority, $allowIPs = null) {
         $this->priority = $priority;
-        $this->allowIPs = array(
-            '127.0.0.0/127.255.255.255',
-            '192.168.0.0/192.168.255.255',
-            '10.0.0.0.0/10.255.255.255',
-            '172.16.0.0/172.31.255.255',
-        );
-        if (is_array($allowIPs)) {
-            $this->allowIPs = array_merge($this->allowIPs, $allowIPs);
-        } elseif (is_string($allowIPs)) {
-            array_unshift($this->allowIPs, $allowIPs);
+        if (IS_CLI) {
+            $this->isAllowed = true;
+        } else {
+            $this->allowIPs = array(
+                '127.0.0.0/127.255.255.255',
+                '192.168.0.0/192.168.255.255',
+                '10.0.0.0.0/10.255.255.255',
+                '172.16.0.0/172.31.255.255',
+            );
+            if (is_array($allowIPs)) {
+                $this->allowIPs = array_merge($this->allowIPs, $allowIPs);
+            } elseif (is_string($allowIPs)) {
+                array_unshift($this->allowIPs, $allowIPs);
+            }
+            $this->isAllowed = $this->isAllowed();
+
+            App::instance()->register_shutdown(array(&$this, 'trace'));
         }
-        $this->isAllowed = $this->isAllowed();
-        
-        App::instance()->register_shutdown(array(&$this, 'trace'));
-        
     }
     /**
      * 判断IP是否在可以debug的范围内
@@ -144,7 +140,23 @@ class Logger {
                     $status = $time.' - [LOG]   --> '; break;
             }
 
-            $this->queue[] = $status.$line."\n";
+            // 不是标量
+            if (!is_scalar($line)) {
+                // 是数组列表
+                if (is_array($line) && !is_assoc($line)) {
+                    $line = implode(',', $line);
+                }
+                // 需要序列化
+                else {
+                    $line = print_r($line, true);
+                }
+            }
+            // 命令行模式直接输出
+            if (IS_CLI) {
+                e($status.$line."\n");
+            } else {
+                $this->queue[] = $status.$line."\n";
+            }
         }
     }
 }

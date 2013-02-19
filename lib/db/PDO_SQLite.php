@@ -103,7 +103,7 @@ class DB_PDO_SQLite extends DBQuery {
             }
         }
         // 记录sql执行日志
-        Logger::instance()->log(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
+        Logger::instance()->debug(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
         return $result;
     }
     /**

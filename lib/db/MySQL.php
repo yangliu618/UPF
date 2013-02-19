@@ -125,7 +125,7 @@ class DB_MySQL extends DBQuery {
             }
         }
         // 记录sql执行日志
-        Logger::instance()->log(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
+        Logger::instance()->debug(sprintf('%01.6f SQL: %s', microtime(true) - $_begin_time, $sql));
         // 查询正常
         if ($result) {
             // 重置计数

@@ -58,6 +58,14 @@ if (defined('TIME_ZONE')) {
         putenv('TZ=' . TIME_ZONE);
     }
 }
+// Logger const variable
+define('LOGGER_OFF',    0); // Nothing at all.
+define('LOGGER_DEBUG',  1); // Most Verbose
+define('LOGGER_INFO',   2); // ...
+define('LOGGER_WARN',   3); // ...
+define('LOGGER_ERROR',  4); // ...
+define('LOGGER_FATAL',  5); // ...
+define('LOGGER_LOG',    6); // Least Verbose
 // register autoload
 spl_autoload_register(array('App', '__autoload'));
 // process lib Variable
@@ -738,7 +746,7 @@ final class App {
             printf("\n\n---------- %s ----------\n", date('Y-m-d H:i:s', time()));
             printf("Powered-By: UPF/%s (UTeng.net)\n", UPF_VER);
             printf("Run-App: root=%s; version=%s; sql_exec=%s\n", APP_ROOT, APP_VER, DBQuery::$query_count);
-            printf("Runtime: %s\n\n", microtime(true) - $this->begin_time);
+            printf("Runtime: %s\n", microtime(true) - $this->begin_time);
             printf("Memory-Usage: %s\n\n", format_size(memory_get_usage() - $this->memory_usage) . ' / ' . ini_get('memory_limit'));
         }
         // http mode
