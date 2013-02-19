@@ -7,7 +7,10 @@
  * @datetime 2011-10-08 12:59
  */
 // 检查环境是否适合做爱做的事
-!version_compare(PHP_VERSION, '5.0', '<') or die('PHP version below 5.0, Please upgrade!<br/>&lt;<a href="http://php.net/downloads.php" target="_blank">http://php.net/downloads.php</a>&gt;');
+if (version_compare(PHP_VERSION, '5.0', '<')) {
+    $_tip = 'PHP version below 5.0, Please upgrade!<br/> &lt;<a href="http://php.net/downloads.php" target="_blank">http://php.net/downloads.php</a>&gt;';
+    die(PHP_SAPI == 'cli' ? str_replace(array('&lt;', '&gt;'), array('<', '>'), strip_tags($_tip))."\n" : $_tip);
+}
 // set error level
 error_reporting() >= (E_ALL & ~E_NOTICE) or error_reporting(E_ALL & ~E_NOTICE);
 // framework version
