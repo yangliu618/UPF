@@ -42,7 +42,7 @@ abstract class UPF_Page_Handler {
         if (get_config('app_rewrite')) {
             $path = APP_ROOT . $path;
         } else {
-            $path = APP_ROOT . 'index.php?' . UPF_QFIELD . '=' . APP_ROOT . $path;
+            $path = APP_ROOT . '?' . UPF_QFIELD . '=' . APP_ROOT . $path;
         }
         return $path;
     }

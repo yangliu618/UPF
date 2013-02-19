@@ -20,7 +20,7 @@ defined('UPF_QFIELD') or define('UPF_QFIELD', 'q');
 define('IS_CGI', !strncasecmp(PHP_SAPI, 'cgi', 3) ? 1 : 0);
 define('IS_WIN', DIRECTORY_SEPARATOR == '\\');
 define('IS_CLI', PHP_SAPI == 'cli' ? 1 : 0);
-define('IS_SAE', extension_loaded('saeext'));
+define('IS_SAE', defined('SAE_TMP_PATH'));
 // current file path
 if (!defined('PHP_FILE')) {
     if (IS_CLI) {
@@ -377,6 +377,8 @@ function apply_filters($tag, $value) {
  * UTeng PHP Framework App Class
  */
 final class App {
+    // app begin memory usage
+    private $memory_usage;
     // app begin time
     private $begin_time;
     // shut down function
@@ -393,6 +395,8 @@ final class App {
     private $qfield;
 
     public function __construct() {
+        // set app begin memory usage
+        $this->memory_usage = memory_get_usage();
         // set app begin time
         $this->begin_time = microtime(true);
         // autoload rules
@@ -407,9 +411,13 @@ final class App {
         } else {
             ob_start();
             // uri
-            $uri = $_SERVER['REQUEST_URI'] == '/' ? PHP_FILE : $_SERVER['REQUEST_URI'];
-            if (($pos=strpos($uri, '?')) !== false) $uri = substr($uri, 0, $pos);
-            $this->rewrite = $uri != PHP_FILE && !file_exists(dirname(UPF_PATH).$uri);
+            $request_uri = $_SERVER['REQUEST_URI'];
+            if (($pos = strpos($request_uri, '?')) !== false) $request_uri = substr($request_uri, 0, $pos);
+            if ($request_uri == APP_ROOT) {
+                $this->rewrite = !is_ifile(dirname(UPF_PATH) . PHP_FILE);
+            } else {
+                $this->rewrite = ($request_uri != PHP_FILE) && (!is_ifile(dirname(UPF_PATH) . $request_uri));
+            }
             $this->qfield  = isset($_GET[UPF_QFIELD]);
             if ($this->rewrite || $this->qfield) {
                 $field = UPF_QFIELD;
@@ -448,9 +456,12 @@ final class App {
                     $_REQUEST = array_merge($_REQUEST, $_GET);
                 }
                 if (empty($uri)) $uri = '/';
+                // set uri
+                $this->uri = $uri;
+            } else {
+                // set uri
+                $this->uri = $request_uri;
             }
-            // set uri
-            $this->uri = $uri;
         }
     }
 
@@ -585,9 +596,8 @@ final class App {
      * @return void
      */
     public function dispatch($handler) {
-        $included  = get_included_files();
         $classfile = $this->class2file($handler);
-        if ($classfile && !in_array(realpath($classfile), $included)) {
+        if ($classfile && !isset($this->class2file[$handler])) {
             include $classfile;
         } elseif ($this->rewrite && !class_exists($handler)) {
             $handler = 'HTTP404';
@@ -692,11 +702,7 @@ final class App {
      * @return void
      */
     public static function __autoload($classname) {
-        $included  = get_included_files();
-        $classfile = App::instance()->class2file($classname);
-        if ($classfile && !in_array(realpath($classfile), $included)) {
-            include $classfile;
-        }
+        include App::instance()->class2file($classname);
     }
     /**
      * register shutdown function
@@ -730,6 +736,7 @@ final class App {
             printf("Powered-By: UPF/%s (UTeng.net)\n", UPF_VER);
             printf("Run-App: root=%s; version=%s; sql_exec=%s\n", APP_ROOT, APP_VER, DBQuery::$query_count);
             printf("Runtime: %s\n\n", microtime(true) - $this->begin_time);
+            printf("Memory-Usage: %s\n\n", format_size(memory_get_usage() - $this->memory_usage) . ' / ' . ini_get('memory_limit'));
         }
         // http mode
         else {
@@ -738,6 +745,7 @@ final class App {
             header('X-Powered-By: UPF/' . UPF_VER . ' (UTeng.net)');
             header('X-Run-App: root=' . APP_ROOT . '; version=' . APP_VER.'; sql_exec='.(DBQuery::$query_count));
             header('X-Runtime: ' . (microtime(true) - $this->begin_time));
+            header('X-Memory-Usage: ' . format_size(memory_get_usage() - $this->memory_usage) . ' / ' . ini_get('memory_limit'));
             // flush content to browser
             ob_end_flush(); flush();
         }
@@ -1240,10 +1248,11 @@ function xmldecode($content){
  */
 function format_size($bytes){
     if ($bytes == 0) return '-';
+    $bytes = floatval($bytes);
     $units = array('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB');
     $i = 0; while ($bytes >= 1024) { $bytes /= 1024; $i++; }
     $precision = $i == 0 ? 0 : 2;
-    return number_format(round($bytes, $precision), $precision) . ' ' . $units[$i];
+    return number_format(round($bytes, $precision), $precision) . $units[$i];
 }
 /**
  * array_splice 保留key
