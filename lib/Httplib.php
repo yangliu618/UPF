@@ -225,8 +225,9 @@ class Httplib {
         curl_setopt( $handle, CURLOPT_URL, $url);
         curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
         curl_setopt( $handle, CURLOPT_USERAGENT, $r['user-agent'] );
-        curl_setopt( $handle, CURLOPT_MAXREDIRS, $r['redirection'] );
-                                                                                                                                
+        if ($r['redirection'] > 0)
+            curl_setopt($handle, CURLOPT_MAXREDIRS, $r['redirection']);
+
         if (!isset($r['headers']['referer']) && !isset($r['headers']['Referer'])) {
             curl_setopt( $handle, CURLOPT_REFERER, $aurl['referer'] );
         }
@@ -248,7 +249,7 @@ class Httplib {
 
         // The option doesn't work with safe mode or when open_basedir is set.
         // Disable HEAD when making HEAD requests.
-        if ( !ini_get('safe_mode') && !ini_get('open_basedir') && 'HEAD' != $r['method'] )
+        if ( $r['redirection'] > 0 && !ini_get('safe_mode') && !ini_get('open_basedir') && 'HEAD' != $r['method'] )
             curl_setopt( $handle, CURLOPT_FOLLOWLOCATION, true );
 
         if ( !empty( $r['headers'] ) ) {
@@ -268,7 +269,7 @@ class Httplib {
         // 提交
         $str_response = curl_exec( $handle );
                                                                                                                                 
-        Logger::instance()->debug(sprintf("%01.6f %s Request: %s \n%s", microtime(true) - $this->begin_time, $r['method'], $url, curl_getinfo($handle, CURLINFO_HEADER_OUT)));
+        Logger::instance()->debug(sprintf("%01.6f %s Request: %s \n%s%s", microtime(true) - $this->begin_time, $r['method'], $url, curl_getinfo($handle, CURLINFO_HEADER_OUT), $r['body']));
                                                                                                                                 
         // We don't need to return the body, so don't. Just execute request and return.
         if ( ! $r['blocking'] ) {

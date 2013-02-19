@@ -142,14 +142,7 @@ class Logger {
 
             // 不是标量
             if (!is_scalar($line)) {
-                // 是数组列表
-                if (is_array($line) && !is_assoc($line)) {
-                    $line = implode(',', $line);
-                }
-                // 需要序列化
-                else {
-                    $line = print_r($line, true);
-                }
+                $line = print_r($line, true);
             }
             // 命令行模式直接输出
             if (IS_CLI) {
