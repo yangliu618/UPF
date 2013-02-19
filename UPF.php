@@ -42,6 +42,8 @@ defined('APP_VER') or define('APP_VER', '[APP_VER]');
 defined('APP_PATH') or define('APP_PATH', UPF_PATH);
 // app root
 defined('APP_ROOT') or define('APP_ROOT', (($r = substr(str_replace('\\','/',dirname(PHP_FILE)), 0, ($i = strlen(substr(realpath('.'), strlen(APP_PATH)))) > 0 ? -$i : strlen(dirname(PHP_FILE)))) == '/' ? $r : $r . '/'));
+// app static resource
+defined('APP_RES') or define('APP_RES', APP_ROOT);
 // http scheme
 define('HTTP_SCHEME', (($scheme = isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : null) == 'off' || empty($scheme)) ? 'http' : 'https');
 // tmp path
@@ -713,7 +715,8 @@ final class App {
      * @return void
      */
     public static function __autoload($classname) {
-        include App::instance()->class2file($classname);
+        $file = App::instance()->class2file($classname);
+        if ($file) include $file;
     }
     /**
      * register shutdown function
