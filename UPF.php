@@ -713,7 +713,8 @@ final class App {
      * @return void
      */
     public static function __autoload($classname) {
-        include App::instance()->class2file($classname);
+        $file = App::instance()->class2file($classname);
+        if ($file) include $file;
     }
     /**
      * register shutdown function
