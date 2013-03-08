@@ -26,10 +26,10 @@ class UCache {
     public function __construct() {
         if (IS_SAE) {
             // KVDB
-            $this->object = new KVCache();
-            if ($this->object->init() === false) {
+            //$this->object = new KVCache();
+            //if ($this->object->init() === false) {
                 $this->object = new NOOPClass();
-            }
+            //}
             /*$error_level = error_reporting(0);
             // sae memcache
             if (function_exists('memcache_init')) {
