@@ -1346,7 +1346,7 @@ function hide_path($path){
  * @param int    $mode   权限
  * @return bool
  */
-function mkdirs($path, $mode = 0600){
+function mkdirs($path, $mode = 0700){
     // sina sae 不能创建目录
     if (IS_SAE || strlen($path)==0) return false;
     if (!is_dir($path)) {

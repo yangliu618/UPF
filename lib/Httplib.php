@@ -329,7 +329,7 @@ class Httplib {
         }
         // 自动编码转换
         $get_charset = null;
-        if (preg_match("/<meta\s*http\-equiv[^>]*?content\s*=\s*[\"']?[\w\/]+;\s*charset\s*=\s*([^\"']+)[\"']?\s*\/?>/i", $the_body, $match)) {
+        if (preg_match("/<meta[^>]+charset\s*=\s*[\"']?([^\"']+)/i", $the_body, $match)) {
             $get_charset = trim($match[1]);
             $the_body = str_replace($match[0], str_replace($match[1], 'utf-8', $match[0]), $the_body);
         }
@@ -493,7 +493,7 @@ class Httplib {
                                                                                                                                 
         // 自动编码转换
         $get_charset = null;
-        if (preg_match("/<meta\s*http\-equiv[^>]*?content\s*=\s*[\"']?[\w\/]+;\s*charset\s*=\s*([^\"']+)[\"']?\s*\/?>/i", $process['body'], $match)) {
+        if (preg_match("/<meta[^>]+charset\s*=\s*[\"']?([^\"']+)/i", $process['body'], $match)) {
             $get_charset = trim($match[1]);
             $process['body'] = str_replace($match[0], str_replace($match[1], 'utf-8', $match[0]), $process['body']);
         }
