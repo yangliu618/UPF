@@ -39,11 +39,6 @@ class UCache {
                 $this->object = new NOOPClass();
             }
         }
-        // memecache
-        elseif(function_exists('memcache_connect')) {
-            // TODO 实现memcache连接
-            $this->object = new NOOPClass();
-        }
         // file cache
         else {
             $this->object = new FCache();
