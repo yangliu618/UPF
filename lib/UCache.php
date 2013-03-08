@@ -29,7 +29,11 @@ class UCache {
             if (function_exists('memcache_init')) {
                 $this->object = new MCache();
                 if ($this->object->init() === false) {
-                    $this->object = new NOOPClass();
+                    // KVDB
+                    $this->object = new KVCache();
+                    if ($this->object->init() === false) {
+                        $this->object = new NOOPClass();
+                    }
                 }
             } else {
                 $this->object = new NOOPClass();
