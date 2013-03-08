@@ -125,7 +125,7 @@ function get_config($name=null, $file='common') {
             // app common autoload
             'app_autoload' => array(
                 '^DB_(.+?)$' => UPF_PATH . '/lib/db/$1.php',
-                '^(FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
+                '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^Spyc$' => UPF_PATH . '/lib/spyc.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
                 '^(DBQuery|HTMLFixer|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',

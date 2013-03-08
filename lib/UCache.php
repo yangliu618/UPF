@@ -7,6 +7,7 @@
 class UCache {
     // Cache instance
     private static $instance;
+
     /**
      * Returns Cache instance.
      *
@@ -24,19 +25,31 @@ class UCache {
 
     public function __construct() {
         if (IS_SAE) {
+            // sae memcache
             if (function_exists('memcache_init')) {
                 $this->object = new MCache();
-                $this->object->init();
                 if ($this->object->init() === false) {
-                    $this->object = new NOOPClass();
+                    // KVDB
+                    $this->object = new KVCache();
+                    if ($this->object->init() === false) {
+                        $this->object = new NOOPClass();
+                    }
                 }
             } else {
                 $this->object = new NOOPClass();
             }
-        } else {
+        }
+        // memecache
+        elseif(function_exists('memcache_connect')) {
+            // TODO 实现memcache连接
+            $this->object = new NOOPClass();
+        }
+        // file cache
+        else {
             $this->object = new FCache();
         }
     }
+
     /**
      * 取得一条缓存数据
      *
@@ -46,6 +59,7 @@ class UCache {
     public function get($key) {
         return $this->object->get($key);
     }
+
     /**
      * 设置缓存
      *
@@ -54,9 +68,10 @@ class UCache {
      * @param int $expire
      * @return bool|void
      */
-    public function set($key, $data, $expire=0) {
+    public function set($key, $data, $expire = 0) {
         return $this->object->set($key, $data, $expire);
     }
+
     /**
      * 删除一个key
      *
@@ -66,6 +81,7 @@ class UCache {
     public function delete($key) {
         return $this->object->delete($key);
     }
+
     /**
      * flush
      *
@@ -90,6 +106,7 @@ class UCache {
         }
         return false;
     }
+
     /**
      * 判断结果不是空值
      *
