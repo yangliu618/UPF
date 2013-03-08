@@ -18,6 +18,10 @@ class MCache {
         return call_user_func_array(array(&$this->object, $name), $arguments);
     }
 
+    public function init() {
+        return $this->object->init();
+    }
+
     public function get($key) {
         return $this->object->get($key);
     }

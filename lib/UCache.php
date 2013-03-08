@@ -38,8 +38,7 @@ class UCache {
             } else {
                 $this->object = new NOOPClass();
             }
-        }
-        // file cache
+        } // file cache
         else {
             $this->object = new FCache();
         }
@@ -94,7 +93,7 @@ class UCache {
      * @return bool
      */
     public function is_null($data) {
-        if ($data === null)
+        if ($data === null || $data === false)
             return true;
         if (is_object($data)) {
             return get_class($data) == 'NOOPClass';
