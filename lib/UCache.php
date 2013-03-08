@@ -25,7 +25,12 @@ class UCache {
 
     public function __construct() {
         if (IS_SAE) {
-            $error_level = error_reporting(0);
+            // KVDB
+            $this->object = new KVCache();
+            if ($this->object->init() === false) {
+                $this->object = new NOOPClass();
+            }
+            /*$error_level = error_reporting(0);
             // sae memcache
             if (function_exists('memcache_init')) {
                 $this->object = new MCache();
@@ -39,9 +44,8 @@ class UCache {
             } else {
                 $this->object = new NOOPClass();
             }
-            error_reporting($error_level);
-        }
-        // file cache
+            error_reporting($error_level);*/
+        } // file cache
         else {
             $this->object = new FCache();
         }
