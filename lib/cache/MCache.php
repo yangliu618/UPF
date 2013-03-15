@@ -19,7 +19,7 @@ class MCache {
     }
 
     public function init() {
-        return $this->object->init();
+        return @$this->object->init();
     }
 
     public function get($key) {
