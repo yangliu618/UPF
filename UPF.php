@@ -128,7 +128,7 @@ function get_config($name=null, $file='common') {
                 '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^Spyc$' => UPF_PATH . '/lib/spyc.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
-                '^(DBQuery|HTMLFixer|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
+                '^(DBQuery|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),
             // app route rules
             'app_routes' => array(),
