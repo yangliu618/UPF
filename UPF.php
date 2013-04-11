@@ -593,6 +593,10 @@ final class App {
                     }
                 }
             }
+            // 自动添加 Handler
+            if (substr_compare($handler, 'Handler', -7, 7) !== 0) {
+                $handler .= 'Handler';
+            }
             empty($this->route_matches) ? array_unshift($this->route_matches, $this->uri) : null;
         } else {
             array_unshift($this->route_matches, $this->uri);

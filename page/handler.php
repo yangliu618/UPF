@@ -19,6 +19,11 @@ abstract class UPF_Page_Handler {
     public function get_styles() {
         return array();
     }
+    public function get_sections() {
+        return array(
+            '<meta charset="utf-8" />'
+        );
+    }
     public function get_page() {
         return UPF_PATH . '/page/default.phtml';
     }
@@ -99,6 +104,7 @@ abstract class UPF_Page_Handler {
 
         $the_body = ob_block_end('body');
         if ($this->wrap) {
+            $head_sections = call_user_func(array(&$this, $method.'_sections'));
             $href_styles  = call_user_func(array(&$this, $method.'_styles'));
             $href_scripts = call_user_func(array(&$this, $method.'_scripts'));
             $text_styles  = ob_get_content('style');
