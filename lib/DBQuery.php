@@ -278,6 +278,9 @@ abstract class DBQuery {
         }
         // 处理占位符
         if ($args) {
+            // 兼容数组模式
+            if (is_array($args[0])) $args = $args[0];
+            // 匹配 $1,$2,$n...
             if (preg_match('/\$[\d]+/', $query)) {
                 while (preg_match('/\$[\d]+/', $query, $r, PREG_OFFSET_CAPTURE)) {
                     $v = $r[0];
@@ -286,7 +289,9 @@ abstract class DBQuery {
                         $query = substr_replace($query, $this->escape($args[$n]), $v[1], strlen($v[0]));
                     }
                 }
-            } else {
+            }
+            // 匹配 ? 占位符
+            else {
                 $i = 0; $count = count($args);
                 while ($count > 0) {
                     if (($pos=strpos($query, '?')) !== false) {
