@@ -559,7 +559,7 @@ final class App {
                 $pathinfo['filename'] = $pathinfo['basename'];
         }
         if (is_null($route_pairs) || is_array($route_pairs)) {
-            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']) . 'Handler';
+            $handler = preg_replace('/[^a-zA-Z0-9\_]/', '', $pathinfo['filename']);
         } else {
             $handler = $route_pairs;
         }
