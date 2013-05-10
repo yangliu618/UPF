@@ -124,10 +124,12 @@ function get_config($name=null, $file='common') {
             'app_rewrite' => true,
             // app common autoload
             'app_autoload' => array(
-                '^DB_(.+?)$' => UPF_PATH . '/lib/db/$1.php',
-                '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^Spyc$' => UPF_PATH . '/lib/spyc.php',
+                '^DB_(.+?)$' => UPF_PATH . '/lib/db/$1.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
+                '^UPF_BaseLib$' => UPF_PATH . '/lib/BaseLib.php',
+                '^UPF_Page_Handler$' => UPF_PATH . '/page/handler.php',
+                '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^(DBQuery|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),
             // app route rules
@@ -246,14 +248,14 @@ function load_config($file, $super=null) {
  * @param int $errno
  * @return void
  */
-function upf_error($error, $errno = 500) {
+function upf_error($error, $errno = 100) {
     if (error_reporting() == 0) return false;
     throw new UPF_Exception($error, $errno);
 }
 /**
  * catch exception
  *
- * @param Exception $e
+ * @param UPF_Exception $e
  * @return void
  */
 function upf_handler_error(&$e) {
@@ -267,7 +269,7 @@ function upf_handler_error(&$e) {
         // handler error
         apply_filters('upf_handler_error', 'logs', $log);
     } else {
-        $data = $e->data;
+        $data = $e->getData();
         // not null
         if ($data !== null) {
             if (!is_scalar($data)) {
@@ -790,7 +792,7 @@ class UPF_Exception extends Exception {
      *
      * @var null|string
      */
-    public $data = null;
+    private $data = null;
     /**
      * construct
      *
@@ -803,6 +805,15 @@ class UPF_Exception extends Exception {
             $message = sprintf('[%s]', ucfirst(gettype($message)));
         }
         parent::__construct($message, $code);
+    }
+
+    /**
+     * 获取data数据
+     *
+     * @return mixed
+     */
+    public function getData() {
+        return $this->data;
     }
 
     /**

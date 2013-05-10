@@ -5,6 +5,6 @@
  * @datetime 2012-10-28 21:45
  */
 
-abstract class UPF_Lib {
+abstract class UPF_BaseLib {
 
 }
