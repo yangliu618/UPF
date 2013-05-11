@@ -124,11 +124,10 @@ function get_config($name=null, $file='common') {
             'app_rewrite' => true,
             // app common autoload
             'app_autoload' => array(
-                '^Spyc$' => UPF_PATH . '/lib/spyc.php',
                 '^DB_(.+?)$' => UPF_PATH . '/lib/db/$1.php',
                 '^Services_JSON$' => UPF_PATH . '/lib/JSON.php',
-                '^UPF_BaseLib$' => UPF_PATH . '/lib/BaseLib.php',
-                '^UPF_Page_Handler$' => UPF_PATH . '/page/handler.php',
+                '^UPF_Lib_Base$' => UPF_PATH . '/lib/Base.php',
+                '^UPF_Page_Handler$' => UPF_PATH . '/page/Handler.php',
                 '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
                 '^(DBQuery|MailDecode|Markdown|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),

@@ -25,7 +25,7 @@ abstract class UPF_Page_Handler {
         );
     }
     public function get_page() {
-        return UPF_PATH . '/page/default.phtml';
+        return UPF_PATH . '/page/Default.phtml';
     }
     /**
      * url
