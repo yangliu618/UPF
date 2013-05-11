@@ -130,7 +130,7 @@ function get_config($name=null, $file='common') {
                 '^UPF_BaseLib$' => UPF_PATH . '/lib/BaseLib.php',
                 '^UPF_Page_Handler$' => UPF_PATH . '/page/handler.php',
                 '^(KVCache|FCache|MCache)$' => UPF_PATH . '/lib/cache/$1.php',
-                '^(DBQuery|MailDecode|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
+                '^(DBQuery|MailDecode|Markdown|Pagebreak|Cookie|PHPMailer|SMTP|UCache|Logger|Validate|Upload|QQWry|Image|Httplib)$' => UPF_PATH . '/lib/$1.php',
             ),
             // app route rules
             'app_routes' => array(),
