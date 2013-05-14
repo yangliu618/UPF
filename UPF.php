@@ -426,11 +426,7 @@ final class App {
             // uri
             $request_uri = $_SERVER['REQUEST_URI'];
             if (($pos = strpos($request_uri, '?')) !== false) $request_uri = substr($request_uri, 0, $pos);
-            if ($request_uri == APP_ROOT) {
-                $this->rewrite = !is_ifile(dirname(UPF_PATH) . PHP_FILE);
-            } else {
-                $this->rewrite = ($request_uri != PHP_FILE) && (!is_ifile(dirname(UPF_PATH) . $request_uri));
-            }
+            $this->rewrite = ($request_uri != PHP_FILE) && (!is_ifile(dirname(UPF_PATH) . $request_uri));
             $this->qfield  = isset($_GET[UPF_QFIELD]);
             if ($this->rewrite || $this->qfield) {
                 $field = UPF_QFIELD;
@@ -594,13 +590,13 @@ final class App {
                     }
                 }
             }
-            // 自动添加 Handler
-            if (substr_compare($handler, 'Handler', -7, 7) !== 0) {
-                $handler .= 'Handler';
-            }
             empty($this->route_matches) ? array_unshift($this->route_matches, $this->uri) : null;
         } else {
             array_unshift($this->route_matches, $this->uri);
+        }
+        // 自动添加 Handler
+        if (substr_compare($handler, 'Handler', -7, 7) !== 0) {
+            $handler .= 'Handler';
         }
         // dispatch
         $this->dispatch($handler);
