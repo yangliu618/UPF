@@ -12,7 +12,7 @@ if (version_compare(PHP_VERSION, '5.0', '<')) {
     die(PHP_SAPI == 'cli' ? str_replace(array('&lt;', '&gt;'), array('<', '>'), strip_tags($_tip))."\n" : $_tip);
 }
 // set error level
-error_reporting() >= (E_ALL & ~E_NOTICE) or error_reporting(E_ALL & ~E_NOTICE);
+error_reporting() >= (E_ALL & ~E_STRICT & ~E_NOTICE) or error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
 // framework version
 define('UPF_VER', '0.3');
 // framework path
@@ -266,7 +266,7 @@ function upf_handler_error(&$e) {
         $log.= sprintf("[File]:\r\n\t%s (%d)\r\n", $error['file'], $error['line']);
         $log.= sprintf("[Trace]:\r\n%s\r\n", $e->getStackTrace());
         // handler error
-        apply_filters('upf_handler_error', 'logs', $log);
+        apply_filters('upf_handler_error', $log, 'logs');
     } else {
         $data = $e->getData();
         // not null
@@ -276,10 +276,10 @@ function upf_handler_error(&$e) {
                     if (is_accept_json())
                         header('Content-Type: application/json; charset=utf-8');
                     $data = json_encode($data);
-                    $data = apply_filters('upf_handler_error', 'json', $data);
+                    $data = apply_filters('upf_handler_error', $data, 'json');
                 } else {
                     $data = print_r($data, true);
-                    $data = apply_filters('upf_handler_error', 'text', $data);
+                    $data = apply_filters('upf_handler_error', $data, 'text');
                 }
             }
             echo $data;
